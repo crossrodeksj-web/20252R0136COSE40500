@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>KU Yearbook - 업로드</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f4f6fa;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .header {
+      background-color: #7a0019;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 60px;
+      border-bottom: 2px solid #5c0014;
+      white-space: nowrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 50px;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      font-size: 15px;
+    }
+
+    .nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .nav a:hover {
+      text-decoration: underline;
+    }
+
+    .logout-btn {
+      background: transparent;
+      color: white;
+      border: 1px solid white;
+      border-radius: 5px;
+      padding: 4px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: auto;
+      position: relative;
+      top: -8px;
+    }
+
+    .logout-btn:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .container {
+      width: 800px;
+      margin: 40px auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #004aad;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    #previewContainer {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    button {
+      margin-top: 25px;
+      padding: 12px 30px;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      background-color: #004aad;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #003a8b;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ✅ 상단바 -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo" onclick="location.href='home.html'">KU Yearbook</div>
+      <div class="nav">
+        <a href="home.html">내 프로필</a>
+        <a href="search.html">검색</a>
+        <a href="dashboard.html">대시보드</a>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">로그아웃</button>
+  </div>
+
+  <div class="container">
+    <h2>📤 새 사진 / 영상 업로드</h2>
+
+    <label>파일 선택</label>
+    <input type="file" id="fileInput" accept="image/*,video/*">
+
+    <div id="previewContainer"></div>
+
+    <label>제목</label>
+    <input type="text" id="title" placeholder="제목을 입력하세요">
+
+    <label>촬영 장소</label>
+    <input type="text" id="location" placeholder="촬영 장소를 입력하세요">
+
+    <label>태그</label>
+    <input type="text" id="tags" placeholder="#예시 #풍경 #친구">
+
+    <button onclick="uploadFile()">업로드 완료</button>
+  </div>
+<script>
+  function logout() {
+    localStorage.removeItem("userProfile");
+    location.href = "login.html";
+  }
+
+  const fileInput = document.getElementById("fileInput");
+  const previewContainer = document.getElementById("previewContainer");
+
+  // ✅ 이미지 및 영상 미리보기
+  fileInput.addEventListener("change", function (e) {
+    const file = e.target.files[0];
+    previewContainer.innerHTML = "";
+
+    if (!file) return;
+
+    const fileURL = URL.createObjectURL(file);
+
+    if (file.type.startsWith("image/")) {
+      const img = document.createElement("img");
+      img.src = fileURL;
+      img.alt = "이미지 미리보기";
+      img.style.maxWidth = "300px";
+      img.style.borderRadius = "8px";
+      previewContainer.appendChild(img);
+    } else if (file.type.startsWith("video/")) {
+      const video = document.createElement("video");
+      video.src = fileURL;
+      video.controls = true;
+      video.width = 300;
+      video.style.borderRadius = "8px";
+      previewContainer.appendChild(video);
+    } else {
+      previewContainer.innerHTML = "<p style='color:red;'>지원하지 않는 파일 형식입니다.</p>";
+    }
+  });
+
+  // ✅ 업로드 완료 (최종 수정 버전)
+  // ✅ 업로드 완료 (영상 base64 변환 버전)
+function uploadFile() {
+  const fileInput = document.getElementById("fileInput");
+  const title = document.getElementById("title").value.trim();
+  const place = document.getElementById("location").value.trim();
+  const tagsInput = document.getElementById("tags").value.trim();
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert("업로드할 파일을 선택하세요!");
+    return;
+  }
+
+  const tags = tagsInput ? tagsInput.split(/[\s#]+/).filter(t => t !== "") : [];
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const uploads = JSON.parse(localStorage.getItem("uploads") || "[]");
+
+    const newFile = {
+      url: e.target.result,  // ✅ base64로 저장 (home에서도 그대로 재생 가능)
+      type: file.type.startsWith("video/") ? "video" : "image",
+      title: title || "제목 없음",
+      place,
+      tags,
+      uploadedAt: new Date().toISOString()
+    };
+
+    uploads.push(newFile);
+    localStorage.setItem("uploads", JSON.stringify(uploads));
+
+    alert("✅ 업로드 완료!");
+    setTimeout(() => {
+      window.location.href = "home.html";
+    }, 1000);
+  };
+
+  // ✅ 영상은 base64로 변환해서 저장
+  reader.readAsDataURL(file);
+}
+
+
+  // ✅ 영상 첫 프레임을 썸네일로 추출
+  function generateVideoThumbnail(videoFile) {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      video.src = URL.createObjectURL(videoFile);
+      video.load();
+      video.addEventListener("loadeddata", () => {
+        canvas.width = video.videoWidth / 3;
+        canvas.height = video.videoHeight / 3;
+        video.currentTime = 1; // 1초 지점 프레임
+      });
+      video.addEventListener("seeked", () => {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const thumbnail = canvas.toDataURL("image/jpeg");
+        resolve(thumbnail);
+      });
+      video.onerror = () => reject();
+    });
+  }
+  </script>
+
+
+  
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>KU Yearbook - 회원가입</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f6f7fb;
+      margin: 0;
+    }
+
+    /* ✅ 상단바 */
+    .header {
+      background-color: #7a0019;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 10px 40px;
+      border-bottom: 2px solid #5c0014;
+      height: 56px;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ✅ 컨테이너 */
+    .container {
+      width: 500px;
+      margin: 60px auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #004aad;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-top: 5px;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: none;
+      height: 70px;
+    }
+
+    button {
+      width: 100%;
+      background-color: #004aad;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background-color: #003a8b;
+    }
+
+    img {
+      display: block;
+      margin: 15px auto;
+      max-width: 200px;
+      max-height: 200px;
+      object-fit: contain; /* ✅ 원본 비율 유지 */
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="title">KU Yearbook</div>
+  </div>
+
+  <div class="container">
+    <h2>📝 회원가입</h2>
+
+    <label>이름</label>
+    <input type="text" id="name" placeholder="이름 입력">
+
+    <label>학교</label>
+    <input type="text" id="school" placeholder="학교명 입력">
+
+    <label>학과</label>
+    <input type="text" id="department" placeholder="학과 입력">
+
+    <label>학년</label>
+    <select id="grade">
+      <option value="1학년">1학년</option>
+      <option value="2학년">2학년</option>
+      <option value="3학년">3학년</option>
+      <option value="4학년">4학년</option>
+    </select>
+
+    <label>학번</label>
+    <input type="text" id="studentId" placeholder="학번 입력">
+
+    <label>프로필 사진 업로드</label>
+    <input type="file" id="photoInput" accept="image/*">
+    <img id="preview" src="https://via.placeholder.com/200x200?text=미리보기+이미지">
+
+    <label>한 줄 소개</label>
+    <input type="text" id="shortIntro" placeholder="간단한 소개 작성">
+
+    <label>자기소개</label>
+    <textarea id="selfIntro" placeholder="자기소개를 입력하세요."></textarea>
+
+    <button onclick="signup()">가입하기</button>
+  </div>
+
+  <script>
+    const photoInput = document.getElementById("photoInput");
+    const preview = document.getElementById("preview");
+    photoInput.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => preview.src = e.target.result;
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function signup() {
+      const name = document.getElementById("name").value.trim();
+      const school = document.getElementById("school").value.trim();
+      const department = document.getElementById("department").value.trim();
+      const grade = document.getElementById("grade").value;
+      const studentId = document.getElementById("studentId").value.trim();
+      const shortIntro = document.getElementById("shortIntro").value.trim();
+      const selfIntro = document.getElementById("selfIntro").value.trim();
+      const photo = preview.src;
+
+      if (!name || !school || !department || !studentId) {
+        return alert("모든 필수 정보를 입력해주세요.");
+      }
+
+      const users = JSON.parse(localStorage.getItem("users") || "{}");
+
+      users[studentId] = {
+        name, school, department, grade, studentId,
+        shortIntro, selfIntro, photo
+      };
+
+      localStorage.setItem("users", JSON.stringify(users));
+
+      alert("회원가입이 완료되었습니다!");
+      location.href = "login.html";
+    }
+  </script>
+</body>
+</html>

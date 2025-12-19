@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>KU Yearbook - 검색</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f4f6fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ✅ 상단바 (profile과 동일) */
+    .header {
+      background-color: #7a0019;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 50px;
+      border-bottom: 2px solid #5c0014;
+      white-space: nowrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 50px;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      font-size: 15px;
+    }
+
+    .nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .nav a:hover {
+      text-decoration: underline;
+    }
+
+    .header-right {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      flex: 1;
+    }
+
+    .logout-btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      background-color: transparent;
+      color: white;
+      border: 1px solid white;
+      border-radius: 5px;
+      padding: 4px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: auto;
+      position: relative;
+    }
+
+    .logout-btn:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* ✅ 검색 영역 */
+    .container {
+      width: 80%;
+      margin: 40px auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #004aad;
+      margin-bottom: 20px;
+    }
+
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+
+    button.search-btn {
+      background-color: #004aad;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 20px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button.search-btn:hover {
+      background-color: #003a8b;
+    }
+
+    /* ✅ 결과 썸네일 */
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .card h3 {
+      margin: 8px 0 4px;
+      font-size: 16px;
+    }
+
+    .card p {
+      font-size: 13px;
+      color: #666;
+      margin: 3px 0;
+    }
+
+    .tags {
+      margin-top: 5px;
+    }
+
+    .tag {
+      display: inline-block;
+      background-color: #e3f2fd;
+      color: #004aad;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 4px;
+    }
+
+    .no-results {
+      color: #777;
+      font-size: 15px;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ 상단바 -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo" onclick="location.href='home.html'">KU Yearbook</div>
+      <div class="nav">
+        <a href="home.html">내 프로필</a>
+        <a href="search.html">검색</a>
+        <a href="dashboard.html">대시보드</a>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+  </div>
+
+  <!-- ✅ 검색 본문 -->
+  <div class="container">
+    <h2>🔍 사진 / 영상 검색</h2>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="제목이나 태그(#)를 입력하세요. 예: #여행, 고양이">
+      <button class="search-btn" onclick="search()">검색</button>
+      <!-- 🎤 가짜 ASR 버튼 추가 -->
+      <button type="button" onclick="startVoiceSearchFake()">🎤</button>
+    </div>
+    <!-- ASR 상태 메시지 영역 추가 -->
+    <p id="asrStatus" style="font-size:13px;color:#777;margin-top:4px;"></p>
+
+    <div id="suggestedTags" style="font-size:13px; color:#555; margin-top:4px;"></div>
+
+    <div id="results" class="results"></div>
+
+    <p id="noResults" class="no-results" style="display:none;">검색 결과가 없습니다.</p>
+  </div>
+
+  <script>
+    function logout() {
+      localStorage.removeItem("userProfile");
+      location.href = "login.html";
+    }
+
+    // ✅ localStorage에서 업로드 데이터 가져오기
+        // ✅ localStorage에서 업로드 데이터 가져오기
+    const uploads = JSON.parse(localStorage.getItem("uploads") || "[]");
+    const resultsDiv = document.getElementById("results");
+    const noResults = document.getElementById("noResults");
+
+    /* ------------------------------
+       ASR + NLU 시뮬레이션용 키워드 규칙
+       - 인식된 문장에서 검색에 유용한 단어를 뽑는 용도
+    ------------------------------ */
+    const ASR_KEYWORDS = [
+      "축제",
+      "동아리",
+      "엠티",
+      "MT",
+      "동물"
+    ];
+
+    // 인식된 문장에서 위 키워드들만 뽑아내는 간단한 NLU 함수
+    function extractKeywordsFromSentence(sentence) {
+      const text = sentence.toLowerCase();
+      const found = [];
+
+      ASR_KEYWORDS.forEach(keyword => {
+        if (text.includes(keyword.toLowerCase())) {
+          found.push(keyword);
+        }
+      });
+
+      return found;
+    }
+
+    /* ------------------------------
+       ASR (가짜): 음성 검색 시뮬레이션
+       - 1) "음성 인식 중..." 상태 표시
+       - 2) 예시 문장을 인식한 것처럼 만들고
+       - 3) 키워드 추출 후 검색어로 사용
+    ------------------------------ */
+    function startVoiceSearchFake() {
+      const input = document.getElementById("searchInput");
+      const status = document.getElementById("asrStatus");
+      if (!input) return;
+
+      // 1) 상태 메시지 표시
+      if (status) {
+        status.innerText = '음성 인식 중... (시뮬레이션)';
+      }
+
+      // 2) 1초 뒤에 "인식 결과"가 나온 것처럼 처리
+      setTimeout(() => {
+        const recognizedSentence = "동물 사진 찾아줘";
+
+        // 3) 규칙 기반 NLU로 키워드 추출
+        const keywords = extractKeywordsFromSentence(recognizedSentence);
+
+        // 검색에 실제로 사용할 query 결정
+        // - 키워드가 하나 이상 있으면 첫 번째 키워드를 사용
+        // - 없으면 전체 문장을 그대로 사용
+        const queryForSearch = keywords.length > 0 ? keywords[0] : recognizedSentence;
+
+        // 인식된 문장과 실제 검색어를 상태 메시지로 보여주기 (HCI 관점에서 좋음)
+        if (status) {
+          status.innerText =
+            `인식된 문장: "${recognizedSentence}"  → 검색어: "${queryForSearch}"`;
+        } else {
+          // 혹시 status 엘리먼트가 없으면 alert라도
+          alert(`인식된 문장: "${recognizedSentence}"\n검색어: "${queryForSearch}"`);
+        }
+
+        // 4) 검색창에 검색어 채워 넣고 search() 실행
+        input.value = queryForSearch;
+        search();
+
+      }, 1000);
+    }
+
+        /* ------------------------------
+       NLU: 추천 태그 규칙
+       - 검색어와 의미적으로 연관된 태그를 제안
+    ------------------------------ */
+    const RELATED_TAGS = {
+      "축제": ["#공연", "#부스", "#입실렌티"],
+      "동물": ["#호랑이", "#고양이"]
+      // 필요하면 여기 키워드/태그 더 추가
+    };
+
+    // 검색어를 기반으로 추천 태그를 화면에 표시
+    function showSuggestedTags(rawQuery) {
+      const box = document.getElementById("suggestedTags");
+      if (!box) return;
+
+      const trimmed = (rawQuery || "").trim();
+      const q = trimmed.replace(/^#/, ""); // 앞에 # 붙였으면 제거
+      if (!q) {
+        box.innerHTML = "";
+        return;
+      }
+
+      let suggestions = [];
+
+      // 1순위: 정확히 일치하는 키
+      if (RELATED_TAGS[q]) {
+        suggestions = RELATED_TAGS[q];
+      } else {
+        // 2순위: 부분 일치 키워드들도 검색
+        const lower = q.toLowerCase();
+        Object.keys(RELATED_TAGS).forEach(key => {
+          if (key.toLowerCase().includes(lower)) {
+            suggestions = suggestions.concat(RELATED_TAGS[key]);
+          }
+        });
+      }
+
+      if (suggestions.length === 0) {
+        box.innerHTML = "";
+        return;
+      }
+
+      // 중복 제거
+      const unique = Array.from(new Set(suggestions));
+
+      box.innerHTML =
+        `<span style="font-weight:600; margin-right:6px;">추천 태그:</span>` +
+        unique
+          .map(tag => `
+            <button type="button"
+                    class="tag"
+                    style="margin-top:4px; cursor:pointer; border:none; border-radius:12px; padding:4px 10px;">
+              ${tag}
+            </button>
+          `)
+          .join(" ");
+
+      // 각 버튼에 클릭 이벤트 연결
+      const buttons = box.querySelectorAll("button.tag");
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const t = btn.textContent.trim();
+          useSuggestedTag(t);
+        });
+      });
+    }
+
+    // 추천 태그를 클릭하면 그 태그로 다시 검색
+    function useSuggestedTag(tag) {
+      const input = document.getElementById("searchInput");
+      if (!input) return;
+      input.value = tag;
+      search();
+    }
+
+
+    function search() {
+      // 원본 검색어(대소문자 유지)와 소문자 버전 분리
+      const rawQuery = document.getElementById("searchInput").value.trim();
+      const query = rawQuery.toLowerCase();
+      resultsDiv.innerHTML = "";
+
+      // ✅ NLU: 추천 태그 표시
+      showSuggestedTags(rawQuery);
+
+      if (!query) {
+        noResults.style.display = "none";
+        return;
+      }
+
+      // 제목 또는 태그에서 검색
+      const filtered = uploads.filter(item =>
+        item.title.toLowerCase().includes(query) ||
+        (item.tags && item.tags.some(tag => tag.toLowerCase().includes(query.replace("#", ""))))
+      );
+
+
+      if (filtered.length === 0) {
+        noResults.style.display = "block";
+        return;
+      }
+
+      noResults.style.display = "none";
+      filtered.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        // 📌 사진 / 영상 분기
+        const preview = item.type === "video"
+          ? `
+              <video 
+                src="${item.url}" 
+                controls
+                muted
+                playsinline
+                preload="metadata"
+                style="width:100%; height:180px; border-radius:6px; object-fit:cover;">
+              </video>
+            `
+          : `<img src="${item.url}" alt="${item.title}">`;
+
+
+        card.innerHTML = `
+          ${preview}
+          <h3>${item.title}</h3>
+          <p>${item.place}</p>
+          <div class="tags">
+            ${(item.tags || []).map(tag => `<span class='tag'>#${tag}</span>`).join(" ")}
+          </div>
+          <button type="button" onclick="readSearchCard(this)" style="margin-top:6px;">🔊</button>
+          <p style="font-size:12px;color:#999;">${item.time || ""}</p>
+        `;
+        resultsDiv.appendChild(card);
+      });
+
+    }
+
+    /* ------------------------------
+       TTS: 검색 결과 카드 읽기
+    ------------------------------ */
+    function readSearchCard(buttonEl) {
+      const card = buttonEl.closest('.card');
+      if (!card) return;
+
+      const title = card.querySelector('h3')?.innerText || '제목 없음';
+
+      // 첫 번째 <p>가 장소, 두 번째 <p>는 시간
+      const placeP = card.querySelector('p');
+      const place = placeP ? placeP.innerText : '';
+
+      const tagSpans = card.querySelectorAll('.tags .tag');
+      const tags = Array.from(tagSpans).map(span =>
+        (span.innerText || '').replace(/^#/, '')
+      );
+
+      const placeSentence = place ? `촬영 장소는 ${place}입니다.` : '';
+      const tagsSentence = tags.length > 0
+        ? `태그는 ${tags.join(", ")} 입니다.`
+        : '';
+
+      const text = `${title}. ${placeSentence} ${tagsSentence}`.trim();
+      speakText(text);
+    }
+  </script>
+
+
+  <!-- TTS 공통 함수 -->
+  <script>
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) {
+        alert('이 브라우저는 음성 출력(TTS)을 지원하지 않습니다.');
+        return;
+      }
+      // 이전에 읽던 거 있으면 정지
+      window.speechSynthesis.cancel();
+
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'ko-KR'; // 한국어
+      window.speechSynthesis.speak(utter);
+    }
+  </script>
+
+</body>
+</html>

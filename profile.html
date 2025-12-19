@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>KU Yearbook - 프로필 관리</title>
+  <style>
+    body {font-family:'Noto Sans KR',sans-serif;margin:0;background:#f6f7fb;color:#333;}
+
+    /* ✅ 상단바 */
+    .header {
+      background-color: #7a0019;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 60px;
+      border-bottom: 2px solid #5c0014;
+      white-space: nowrap;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 50px;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      font-size: 15px;
+    }
+
+    .nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .nav a:hover {
+      text-decoration: underline;
+    }
+
+    .logout-btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      background-color: transparent;
+      color: white;
+      border: 1px solid white;
+      border-radius: 5px;
+      padding: 4px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: auto;
+      position: relative;
+      top: -9px;
+    }
+
+    .logout-btn:hover {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* ✅ 본문 */
+    .container {
+      width: 600px;
+      margin: 60px auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #004aad;
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: none;
+      height: 70px;
+    }
+
+    input[readonly] {
+      background-color: #f2f2f2;
+    }
+
+    button {
+      width: 100%;
+      background-color: #004aad;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      background-color: #003a8b;
+    }
+
+    img {
+      display: block;
+      margin: 15px auto;
+      max-width: 200px;
+      max-height: 200px;
+      object-fit: contain;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ✅ 상단바 -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo" onclick="location.href='home.html'">KU Yearbook</div>
+      <div class="nav">
+        <a href="home.html">내 프로필</a>
+        <a href="search.html">검색</a>
+        <a href="dashboard.html">대시보드</a>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+  </div>
+
+  <!-- ✅ 본문 -->
+  <div class="container">
+    <h2>📘 프로필 관리</h2>
+
+    <label>이름</label>
+    <input type="text" id="name">
+
+    <label>학교</label>
+    <input type="text" id="school">
+
+    <label>학과</label>
+    <input type="text" id="department">
+
+    <label>학년 (선택 입력)</label>
+    <select id="grade">
+      <option value="">선택 안함</option>
+      <option value="1학년">1학년</option>
+      <option value="2학년">2학년</option>
+      <option value="3학년">3학년</option>
+      <option value="4학년">4학년</option>
+    </select>
+
+    <label>학번</label>
+    <input type="text" id="studentId" readonly>
+
+    <label>프로필 사진 (선택 입력)</label>
+    <input type="file" id="photoInput" accept="image/*">
+    <img id="preview" src="https://via.placeholder.com/200x200?text=기본+이미지">
+
+    <label>한 줄 소개</label>
+    <input type="text" id="shortIntro">
+
+    <label>자기소개</label>
+    <textarea id="selfIntro"></textarea>
+
+    <button id="updateBtn">수정하기</button>
+  </div>
+
+  <script>
+    // ✅ 로그아웃
+    function logout() {
+      localStorage.removeItem("userProfile");
+      location.href = "login.html";
+    }
+
+    // ✅ 기존 데이터 불러오기
+    const current = JSON.parse(localStorage.getItem("userProfile") || "{}");
+    const users = JSON.parse(localStorage.getItem("users") || "{}");
+
+    if (!current.studentId) location.href = "login.html";
+
+    document.getElementById("name").value = current.name || "";
+    document.getElementById("school").value = current.school || "";
+    document.getElementById("department").value = current.department || "";
+    document.getElementById("grade").value = current.grade || "";
+    document.getElementById("studentId").value = current.studentId || "";
+    document.getElementById("shortIntro").value = current.shortIntro || "";
+    document.getElementById("selfIntro").value = current.selfIntro || "";
+    document.getElementById("preview").src = current.photo || "https://via.placeholder.com/200x200?text=기본+이미지";
+
+    // ✅ 이미지 압축 (선택 입력)
+    function compressImage(file, callback) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const maxW = 300;
+          const scale = Math.min(1, maxW / img.width);
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.7);
+          callback(compressed);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById("photoInput").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (file) {
+        compressImage(file, (compressed) => {
+          document.getElementById("preview").src = compressed;
+        });
+      }
+    });
+
+    // ✅ 수정하기 버튼 클릭 (선택 입력 허용)
+    document.getElementById("updateBtn").addEventListener("click", () => {
+      const currentProfile = JSON.parse(localStorage.getItem("userProfile") || "{}");
+      const users = JSON.parse(localStorage.getItem("users") || "{}");
+
+      const previewSrc = document.getElementById("preview").src || currentProfile.photo || "https://via.placeholder.com/200x200?text=기본+이미지";
+
+      const updated = {
+        name: document.getElementById("name").value.trim() || currentProfile.name || "",
+        school: document.getElementById("school").value.trim() || currentProfile.school || "",
+        department: document.getElementById("department").value.trim() || currentProfile.department || "",
+        grade: document.getElementById("grade").value || currentProfile.grade || "",
+        studentId: document.getElementById("studentId").value || currentProfile.studentId,
+        shortIntro: document.getElementById("shortIntro").value.trim() || currentProfile.shortIntro || "",
+        selfIntro: document.getElementById("selfIntro").value.trim() || currentProfile.selfIntro || "",
+        photo: previewSrc
+      };
+
+      users[updated.studentId] = updated;
+      localStorage.setItem("users", JSON.stringify(users));
+      localStorage.setItem("userProfile", JSON.stringify(updated));
+
+      alert("프로필이 수정되었습니다!");
+      window.location.href = "home.html";
+    });
+  </script>
+</body>
+</html>
